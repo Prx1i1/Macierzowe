@@ -26,6 +26,15 @@ public class Matrix {
         this.stride = stride;
     }
 
+    public static Matrix generateRandom(int rows, int cols) {
+        Matrix m = new Matrix(rows, cols);
+        // we know the matrix is dense (stride == cols)
+        for (int i = 0; i < m.data.length; i++) {
+            m.data[i] = Util.random(1e-8, 1.0);
+        }
+        return m;
+    }
+
     private Coords indexToCoords(int i) {
         int x = i % cols;
         int y = i / cols;
@@ -148,6 +157,19 @@ public class Matrix {
         return true;
     }
 
+    public boolean equalsFuzzy(Matrix other, double epsilon) {
+        if (other == null || getClass() != other.getClass()) return false;
+        Matrix o = (Matrix) other;
+        if (rows != o.rows || cols != o.cols) return false;
+
+        for (int y = 0; y < rows; y++) {
+            for (int x = 0; x < cols; x++) {
+                if (Math.abs(at(y, x) - o.at(y, x)) > epsilon) return false;
+            }
+        }
+        return true;
+    }
+
     @Override
     public String toString() {
         String header = "Matrix %dx%d\n".formatted(rows, cols);
@@ -155,7 +177,7 @@ public class Matrix {
         for (int y = 0; y < rows; y++) {
             contents.append("| ");
             for (int x = 0; x < cols; x++) {
-                contents.append("%10.2f ".formatted(at(y, x)));
+                contents.append("%10.4f ".formatted(at(y, x)));
             }
             contents.append("|\n");
         }
