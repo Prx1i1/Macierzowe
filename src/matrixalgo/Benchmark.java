@@ -60,8 +60,11 @@ public class Benchmark {
     public static void benchmark() {
         OpCounter counter = new OpCounter();
         Algorithms algorithms = new Algorithms(counter);
+        ResultWriter writer = new ResultWriter("results");
 
-        for (int i = 1; i < 100; i++) {
+        int MAX_SIZE = 100;
+
+        for (int i = 1; i < MAX_SIZE; i++) {
             Matrix m1 = Matrix.generateRandom(i, i);
             Matrix m2 = Matrix.generateRandom(i, i);
             Matrix result = new Matrix(i, i);
@@ -82,12 +85,17 @@ public class Benchmark {
                 algorithms.multiplyLaderman(result, m1, m2);
             });
 
+
+
             System.out.printf("Benchmark %dx%d:%n", i, i);
             System.out.printf("Classic: %.4f s%n", classicTime);
             System.out.printf("Binet: %.4f s%n", binetTime);
             System.out.printf("Strassen: %.4f s%n", strassenTime);
             System.out.printf("Laderman: %.4f s%n", ladermanTime);
             System.out.println();
+
+
+            writer.writeResult("lab1test.txt", new double[]{i, classicTime, binetTime, strassenTime, ladermanTime});
         }
     }
 }
