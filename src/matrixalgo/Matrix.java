@@ -1,5 +1,7 @@
 package matrixalgo;
 
+import java.util.Arrays;
+
 public class Matrix {
     private final double[] data;
     private final int offset;
@@ -81,6 +83,40 @@ public class Matrix {
         return new Matrix(data, startOffset, newRows, newCols, stride);
     }
 
+    public Matrix[][] chunk(int rowChunks, int colChunks) {
+        Matrix[][] chunks = new Matrix[rowChunks][colChunks];
+
+        int rowLength = rows / rowChunks;
+        int colLength = cols / colChunks;
+
+        for (int y = 0; y < rowChunks; y++) {
+            for (int x = 0; x < colChunks; x++) {
+                chunks[y][x] = view(rowLength * y, rowLength * (y+1), colLength * x, colLength * (x+1));
+            }
+        }
+
+        return chunks;
+    }
+
+    public void fill(double value) {
+        if (stride == cols) {
+            int length = rows * cols;
+            Arrays.fill(data, offset, offset + length, value);
+        } else {
+            for (int y = 0; y < rows; y++) {
+                int start = offset + y * stride;
+                Arrays.fill(data, start, start + cols, value);
+            }
+        }
+    }
+
+    /**
+     * Empty the matrix by setting each cell to 0.0
+     */
+    public void reset() {
+        fill(0.0);
+    }
+
     public int getRows() {
         return rows;
     }
@@ -91,6 +127,25 @@ public class Matrix {
 
     public int getStride() {
         return stride;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null || getClass() != obj.getClass()) return false;
+        Matrix o = (Matrix) obj;
+        if (rows != o.rows || cols != o.cols) return false;
+
+        if (rows == stride && o.rows == o.stride) {
+            int length = rows * cols;
+            return Arrays.equals(data, offset, length, o.data, o.offset, length);
+        } else {
+            for (int y = 0; y < rows; y++) {
+                for (int x = 0; x < cols; x++) {
+                    if (at(y, x) != o.at(y, x)) return false;
+                }
+            }
+        }
+        return true;
     }
 
     @Override
