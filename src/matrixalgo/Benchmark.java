@@ -29,6 +29,29 @@ public class Benchmark {
         return times[1];
     }
 
+    public static void warmup() {
+        OpCounter counter = new OpCounter();
+        Algorithms algorithms = new Algorithms(counter);
+
+        Matrix m1 = Matrix.generateRandom(6, 6);
+        Matrix m2 = Matrix.generateRandom(6, 6);
+        Matrix result = new Matrix(6, 6);
+        System.out.println("Warming up...");
+        long start = System.currentTimeMillis();
+        while (true) {
+            result.reset();
+            counter.reset();
+            algorithms.multiplyClassic(result, m1, m2);
+            algorithms.multiplyBinet(result, m1, m2, false);
+            algorithms.multiplyStrassen(result, m1, m2);
+            algorithms.multiplyLaderman(result, m1, m2);
+
+            // 10 seconds of warmup, need to get the cpu smoking, fans running
+            if (System.currentTimeMillis() - start > 10_000) break;
+        }
+        System.out.println("done");
+    }
+
     public static void benchmark() {
         OpCounter counter = new OpCounter();
         Algorithms algorithms = new Algorithms(counter);
