@@ -20,7 +20,12 @@ public class Benchmark {
         for (int i = 0; i < times.length; i++) {
             result.reset();
             counter.reset();
-            times[i] = timed(r);
+            try {
+                times[i] = timed(r);
+            } catch (Exception e) {
+                e.printStackTrace();
+                return Double.NaN;
+            }
             // needs testing whether running the garbage collector after a run is good
 //            System.gc();
         }
