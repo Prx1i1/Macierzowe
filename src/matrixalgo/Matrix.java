@@ -26,6 +26,14 @@ public class Matrix {
         this.stride = stride;
     }
 
+    public Matrix(Matrix target){
+        this.rows = target.getRows();
+        this.cols = target.getCols();
+        data = target.data;
+        offset = 0;
+        this.stride = cols;
+    }
+
     public static Matrix generateRandom(int rows, int cols) {
         Matrix m = new Matrix(rows, cols);
         // we know the matrix is dense (stride == cols)

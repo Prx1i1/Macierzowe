@@ -528,4 +528,76 @@ public class Algorithms {
         new EquationChain(this, Tc[2][2])
                 .add(m6, m7).add(m8).add(m9).add(m23);
     }
+
+    public void invertBinet(Matrix target){
+        int n = target.getRows();
+        int half = n / 2;
+
+        if (n == 1) {
+            target.put(0, 0, 1.0 / target.at(0, 0)); // 1 dzielenie
+            return;
+        }
+
+        Matrix target_11 = target.view(0, half, 0, half);
+        Matrix target_12 = target.view(0, half, half, n);
+        Matrix target_21 = target.view(half, n, 0, half);
+        Matrix target_22 = target.view(half, n, half, n);
+
+        Matrix inv_target_11 = new Matrix(target_11); // kopia
+        invertBinet(inv_target_11);
+
+        Matrix t1 = new Matrix(half, half);
+        multiplyBinet(t1, target_21, inv_target_11, false);
+
+        Matrix t2 = new Matrix(half, half);
+        multiplyBinet(t2, t1, target_12, false);
+
+        Matrix S = new Matrix(half, half);
+        subtractMatrices(S, target_22, t2);
+
+        Matrix S_inv = new Matrix(S);
+        invertBinet(S_inv);
+
+        // P1 = A11^{-1} * A12
+        Matrix P1 = new Matrix(half, half);
+        multiplyBinet(P1, inv_target_11, target_12, false);
+
+        // P2 = S^{-1} * A21
+        Matrix P2 = new Matrix(half, half);
+        multiplyBinet(P2, S_inv, target_21, false);
+
+        // P1P2 = P1 * P2
+        Matrix P1P2 = new Matrix(half, half);
+        multiplyBinet(P1P2, P1, P2, false);
+
+        // P1S = P1 * S^{-1}
+        Matrix P1S = new Matrix(half, half);
+        multiplyBinet(P1S, P1, S_inv, false);
+
+        // P2A11 = P2 * A11^{-1}
+        Matrix P2A11 = new Matrix(half, half);
+        multiplyBinet(P2A11, P2, inv_target_11, false);
+
+        // B11 = A11^{-1} + P1P2
+        for (int i = 0; i < half; i++)
+            for (int j = 0; j < half; j++)
+                target_11.put(i, j, inv_target_11.at(i, j) + P1P2.at(i, j));
+
+        // B12 = -P1S
+        for (int i = 0; i < half; i++)
+            for (int j = 0; j < half; j++)
+                target_12.put(i, j, -P1S.at(i, j));
+
+        // B21 = -P2A11
+        for (int i = 0; i < half; i++)
+            for (int j = 0; j < half; j++)
+                target_21.put(i, j, -P2A11.at(i, j));
+
+        // B22 = S^{-1}
+        for (int i = 0; i < half; i++)
+            for (int j = 0; j < half; j++)
+                target_22.put(i, j, S_inv.at(i, j));
+
+    }
+
 }
