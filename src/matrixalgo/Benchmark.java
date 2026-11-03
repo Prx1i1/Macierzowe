@@ -136,6 +136,20 @@ public class Benchmark {
     }
 
     public static void lab2benchmark(){
+        OpCounter counter = new OpCounter();
+        Algorithms algorithms = new Algorithms(counter);
+        ResultWriter writer = new ResultWriter("results");
+
+        int MAX_SIZE = 1000;
+        Matrix m1 = Matrix.generateRandom(2,2);
+        m1.put(0,0, 4);
+        m1.put(0,1, 7);
+        m1.put(1,0, 2);
+        m1.put(1,1, 6);
+
+        System.out.printf(m1.toString());
+        algorithms.invertBinet(m1);
+        System.out.printf(m1.toString());
 
     }
 }
