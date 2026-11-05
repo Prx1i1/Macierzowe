@@ -166,5 +166,9 @@ public class Benchmark {
         Matrix mi9 = new Matrix(9, 9);
         algorithms.invertLaderman(mi9, m9);
         System.out.println(mi9);
+
+        Matrix ladermanPaddedTest = new Matrix(2, 2);
+        algorithms.invertLaderman(ladermanPaddedTest, m1);
+        System.out.println(ladermanPaddedTest);
     }
 }

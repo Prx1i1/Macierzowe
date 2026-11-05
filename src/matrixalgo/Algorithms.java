@@ -544,6 +544,16 @@ public class Algorithms {
 
         if (n == 1) {
             target.put(0, 0, 1.0 / target.at(0, 0)); // 1 dzielenie
+            counter.multiplicative++;
+            return;
+        }
+
+        // Check if we need padding - it is when n isn't a power of 2
+        if (Integer.highestOneBit(n) != n) {
+            int paddedSize = Integer.highestOneBit(n) * 2;
+            Matrix padded = target.padEye(paddedSize);
+            invertBinet(padded);
+            target.copy(padded, 0, 0, 0, 0, target.getCols(), target.getRows());
             return;
         }
 
@@ -625,6 +635,16 @@ public class Algorithms {
         }
 
         int n = A.getRows();
+
+        int rounded = (int)Math.pow(3, Math.ceil(Math.log(n) / Math.log(3)));
+        if (rounded != n) {
+            Matrix padded = A.padEye(rounded);
+            Matrix paddedTarget = new Matrix(rounded, rounded);
+            invertLaderman(paddedTarget, padded);
+            B.copy(padded, 0, 0, 0, 0, B.getCols(), B.getRows());
+            return;
+        }
+
         int third = n / 3;
 
         Matrix[][] Ac = A.chunk(3, 3);
