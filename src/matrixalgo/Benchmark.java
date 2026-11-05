@@ -151,5 +151,20 @@ public class Benchmark {
         algorithms.invertBinet(m1);
         System.out.printf(m1.toString());
 
+        Matrix m3x3 = new Matrix(new double[] {
+                3, 3, 7,
+                6, 8, 5,
+                4, 5, 2,
+        }, 0, 3, 3, 3);
+        System.out.println(m3x3);
+        Matrix mi3x3 = new Matrix(3, 3);
+        algorithms.invertLaderman(mi3x3, m3x3);
+        System.out.println(mi3x3);
+
+        Matrix m9 = Matrix.generateRandom(9, 9);
+        System.out.println(m9);
+        Matrix mi9 = new Matrix(9, 9);
+        algorithms.invertLaderman(mi9, m9);
+        System.out.println(mi9);
     }
 }

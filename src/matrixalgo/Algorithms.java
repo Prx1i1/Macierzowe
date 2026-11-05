@@ -25,6 +25,15 @@ public class Algorithms {
         }
     }
 
+    public void negateInPlace(Matrix target) {
+        for (int y = 0; y < target.getRows(); y++) {
+            for (int x = 0; x < target.getCols(); x++) {
+                target.put(y, x, -target.at(y, x));
+                // this should be a cheap operation, i don't think we should count those
+            }
+        }
+    }
+
     public void multiplyClassic(Matrix target, Matrix op1, Matrix op2) {
         // here would go checks that the matrix sizes are correct, alas i dont feel like writing those
         for (int y = 0; y < target.getRows(); y++) {
@@ -601,6 +610,103 @@ public class Algorithms {
                         S_inv.at(i, j));
             }
         }
+    }
+
+    /**
+     * Inverts a matrix using the recursive Laderman algorithm
+     * @param B output matrix
+     * @param A input matrix
+     */
+    public void invertLaderman(Matrix B, Matrix A) {
+        if (A.getRows() == 1) {
+            B.put(0, 0, 1.0 / A.at(0, 0));
+            counter.multiplicative++;
+            return;
+        }
+
+        int n = A.getRows();
+        int third = n / 3;
+
+        Matrix[][] Ac = A.chunk(3, 3);
+        Matrix[][] Bc = B.chunk(3, 3);
+
+        Matrix scratch = new Matrix(third, third);
+        Matrix scratch2 = new Matrix(third, third);
+
+        Matrix D = new Matrix(third, third);
+        invertLaderman(D, Ac[0][0]);
+
+        Matrix F = new Matrix(third, third);
+        multiplyLaderman(F, D, Ac[0][1]);
+
+        Matrix K = new Matrix(third, third);
+        multiplyLaderman(scratch, Ac[1][0], F);
+        subtractMatrices(scratch2, Ac[1][1], scratch);
+        invertLaderman(K, scratch2);
+
+        Matrix O = new Matrix(third, third);
+        multiplyLaderman(scratch, K, Ac[1][0]);
+        multiplyLaderman(O, scratch, D);
+        negateInPlace(O);
+
+        Matrix S = new Matrix(third, third);
+        multiplyLaderman(S, D, Ac[0][2]);
+
+        Matrix W = new Matrix(third, third);
+        multiplyLaderman(scratch, Ac[1][0], S);
+        subtractMatrices(scratch2, Ac[1][2], scratch);
+        multiplyLaderman(W, K, scratch2);
+
+        Matrix Y = new Matrix(third, third);
+        multiplyLaderman(scratch, F, W);
+        subtractMatrices(Y, S, scratch);
+
+        Matrix BF = new Matrix(third, third);
+        multiplyLaderman(scratch, Ac[2][0], F);
+        subtractMatrices(BF, Ac[2][1], scratch);
+
+//        Matrix BI = new Matrix(third, third);
+        Matrix BI = Bc[2][2];
+        multiplyLaderman(scratch, Ac[2][0], S);
+        subtractMatrices(scratch2, Ac[2][2], scratch);
+        multiplyLaderman(scratch, BF, W);
+        subtractMatrices(scratch2, scratch2, scratch);
+        invertLaderman(BI, scratch2);
+        negateInPlace(BI);
+
+//        Matrix BN = new Matrix(third, third);
+        Matrix BN = Bc[2][0];
+        multiplyLaderman(scratch, Ac[2][0], D);
+        multiplyLaderman(scratch2, BF, O);
+        addMatrices(scratch, scratch, scratch2);
+        multiplyLaderman(BN, BI, scratch);
+
+//        Matrix BU = new Matrix(third, third);
+        Matrix BU = Bc[2][1];
+        multiplyLaderman(scratch, BI, BF);
+        multiplyLaderman(BU, scratch, K);
+
+        multiplyLaderman(scratch, F, O);
+        multiplyLaderman(scratch2, Y, BN);
+        subtractMatrices(Bc[0][0], D, scratch);
+        subtractMatrices(Bc[0][0], Bc[0][0], scratch2);
+
+        multiplyLaderman(scratch, F, K);
+        multiplyLaderman(scratch2, Y, BU);
+        addMatrices(Bc[0][1], scratch, scratch2);
+        negateInPlace(Bc[0][1]);
+
+        multiplyLaderman(Bc[0][2], Y, BI);
+
+        multiplyLaderman(scratch, W, BN);
+        subtractMatrices(Bc[1][0], O, scratch);
+
+        multiplyLaderman(scratch, W, BU);
+        subtractMatrices(Bc[1][1], K, scratch);
+
+        multiplyLaderman(Bc[1][2], W, BI);
+
+        negateInPlace(Bc[2][2]);
     }
 
 }

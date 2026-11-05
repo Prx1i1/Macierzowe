@@ -1,0 +1,23 @@
+// Mostly output from the python script with some manual cleanup and improvements
+
+D = A11**-1
+F = D*A12
+K = (A22 - A21*F)**-1
+O = -K*A21*D
+S = D*A13
+W = K*(A23 - A21*S)
+Y = S - F*W
+BF = A32 - A31*F
+BI = -(A33 - A31*S - BF*W)**-1
+BN = BI*(A31*D + BF*O)
+BU = BI*BF*K
+
+B11 = D - F*O - Y*BN
+B12 = -(F*K + Y*BU)
+B13 = Y*BI
+B21 = O - W*BN
+B22 = K - W*BU
+B23 = W*BI
+B31 = BN
+B32 = BU
+B33 = -BI
