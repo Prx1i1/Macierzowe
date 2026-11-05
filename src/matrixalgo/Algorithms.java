@@ -622,6 +622,90 @@ public class Algorithms {
         }
     }
 
+    public void invertStrassen(Matrix target) {
+        int n = target.getRows();
+        int half = n / 2;
+
+        if (n == 1) {
+            target.put(0, 0, 1.0 / target.at(0, 0)); // 1 dzielenie
+            counter.multiplicative++;
+            return;
+        }
+
+        // Check if we need padding - it is when n isn't a power of 2
+        if (Integer.highestOneBit(n) != n) {
+            int paddedSize = Integer.highestOneBit(n) * 2;
+            Matrix padded = target.padEye(paddedSize);
+            invertStrassen(padded);
+            target.copy(padded, 0, 0, 0, 0, target.getCols(), target.getRows());
+            return;
+        }
+
+        // Widoki = KOPIE (view robi new Matrix), więc target_11..target_22
+        // zawierają poprawne wartości, ale zapis do nich NIE zmienia target.
+        Matrix target_11 = target.view(0, half, 0, half);
+        Matrix target_12 = target.view(0, half, half, n);
+        Matrix target_21 = target.view(half, n, 0, half);
+        Matrix target_22 = target.view(half, n, half, n);
+
+        Matrix inv_target_11 = new Matrix(target_11);
+        invertStrassen(inv_target_11);
+
+        Matrix t1 = new Matrix(half, half);
+        multiplyStrassen(t1, target_21, inv_target_11);
+
+        Matrix t2 = new Matrix(half, half);
+        multiplyStrassen(t2, t1, target_12);
+
+        Matrix S = new Matrix(half, half);
+        subtractMatrices(S, target_22, t2);   // S = A22 - t2
+
+        Matrix S_inv = new Matrix(S);
+        invertStrassen(S_inv);
+
+        // P1 = A11^{-1} * A12
+        Matrix P1 = new Matrix(half, half);
+        multiplyStrassen(P1, inv_target_11, target_12);
+
+        // P2 = S^{-1} * A21
+        Matrix P2 = new Matrix(half, half);
+        multiplyStrassen(P2, S_inv, target_21);
+
+        // P1P2 = P1 * P2 * A11^{-1}
+        Matrix P1P2_tmp = new Matrix(half, half);
+        multiplyStrassen(P1P2_tmp, P1, P2);
+
+        Matrix P1P2 = new Matrix(half, half);
+        multiplyStrassen(P1P2, P1P2_tmp, inv_target_11);
+        // P1S = P1 * S^{-1}
+        Matrix P1S = new Matrix(half, half);
+        multiplyStrassen(P1S, P1, S_inv);
+
+        // P2A11 = P2 * A11^{-1}
+        Matrix P2A11 = new Matrix(half, half);
+        multiplyStrassen(P2A11, P2, inv_target_11);
+
+        for (int i = 0; i < half; i++) {
+            for (int j = 0; j < half; j++) {
+                // B11 = A11^{-1} + P1P2
+                target.put(i, j,
+                        inv_target_11.at(i, j) + P1P2.at(i, j));
+
+                // B12 = -P1S
+                target.put(i, j + half,
+                        -P1S.at(i, j));
+
+                // B21 = -P2A11
+                target.put(i + half, j,
+                        -P2A11.at(i, j));
+
+                // B22 = S^{-1}
+                target.put(i + half, j + half,
+                        S_inv.at(i, j));
+            }
+        }
+    }
+
     /**
      * Inverts a matrix using the recursive Laderman algorithm
      * @param B output matrix

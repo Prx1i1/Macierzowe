@@ -26,12 +26,18 @@ public class Matrix {
         this.stride = stride;
     }
 
+    /**
+     * Actually a copy constructor this time, it copies the data to a new array
+     * @param target source matrix
+     */
     public Matrix(Matrix target){
         this.rows = target.getRows();
         this.cols = target.getCols();
-        data = target.data;
+        int length = rows * cols;
+        data = new double[length];
         offset = 0;
         this.stride = cols;
+        copy(target, 0, 0, 0, 0, cols, rows);
     }
 
     public static Matrix generateRandom(int rows, int cols) {

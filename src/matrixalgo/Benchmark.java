@@ -161,6 +161,10 @@ public class Benchmark {
         algorithms.invertLaderman(mi3x3, m3x3);
         System.out.println(mi3x3);
 
+        algorithms.invertBinet(m3x3);
+        System.out.println("biner 3x3");
+        System.out.println(m3x3);
+
         Matrix m9 = Matrix.generateRandom(9, 9);
         System.out.println(m9);
         Matrix mi9 = new Matrix(9, 9);
