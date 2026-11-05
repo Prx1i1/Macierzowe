@@ -134,6 +134,27 @@ public class Matrix {
         fill(0.0);
     }
 
+    public void copy(Matrix from, int fromY, int fromX, int toY, int toX, int width, int height) {
+        // there should probably be some size checks here :3
+        for (int y = 0; y < height; y++) {
+            System.arraycopy(from.data, from.coordsToIndex(fromY + y, fromX), data, coordsToIndex(toY + y, toX), width);
+        }
+    }
+
+    /**
+     * Pads a matrix to a specified size with ones on the diagonal
+     * @param size Size of the new matrix on both axes
+     * @return padded copy of the matrix
+     */
+    public Matrix padEye(int size) {
+        Matrix padded = new Matrix(size, size);
+        padded.copy(this, 0, 0, 0, 0, cols, rows);
+        for (int i = cols; i < size; i++) {
+            padded.put(i, i, 1.0);
+        }
+        return padded;
+    }
+
     public int getRows() {
         return rows;
     }
