@@ -52,6 +52,25 @@ public class Benchmark {
         // median
         return times[(int) Math.floor((double) attempts / 2)];
     }
+    //i am not too sure if it should be a new method, but...
+    private static double timedInvert(Matrix result, OpCounter counter, Runnable r, int attempts) {
+        double[] times = new double[attempts];
+        for (int i = 0; i < times.length; i++) {
+            result.reset();
+            counter.reset();
+            try {
+                times[i] = timed(r);
+            } catch (Exception e) {
+                e.printStackTrace();
+                return Double.NaN;
+            }
+            // needs testing whether running the garbage collector after a run is good
+//            System.gc();
+        }
+        Arrays.sort(times);
+        // median
+        return times[(int) Math.floor((double) attempts / 2)];
+    }
 
     public static void warmup() {
         OpCounter counter = new OpCounter();
@@ -141,38 +160,46 @@ public class Benchmark {
         ResultWriter writer = new ResultWriter("results");
 
         int MAX_SIZE = 1000;
-        Matrix m1 = Matrix.generateRandom(2,2);
-        m1.put(0,0, 4);
-        m1.put(0,1, 7);
-        m1.put(1,0, 2);
-        m1.put(1,1, 6);
 
-        System.out.printf(m1.toString());
-        algorithms.invertBinet(m1);
-        System.out.printf(m1.toString());
+        for (int i = 1; i < MAX_SIZE; i++) {
+            Matrix result = new Matrix(i, i);
 
-        Matrix m3x3 = new Matrix(new double[] {
-                3, 3, 7,
-                6, 8, 5,
-                4, 5, 2,
-        }, 0, 3, 3, 3);
-        System.out.println(m3x3);
-        Matrix mi3x3 = new Matrix(3, 3);
-        algorithms.invertLaderman(mi3x3, m3x3);
-        System.out.println(mi3x3);
+            double binetTime = timedInvert(result, counter, () -> {
+                algorithms.invertBinet(result);
+            }, 1);
 
-        algorithms.invertBinet(m3x3);
-        System.out.println("biner 3x3");
-        System.out.println(m3x3);
+            int[] binetOps = {0, 0};
+            binetOps[0] = counter.additive;
+            binetOps[1] = counter.multiplicative;
 
-        Matrix m9 = Matrix.generateRandom(9, 9);
-        System.out.println(m9);
-        Matrix mi9 = new Matrix(9, 9);
-        algorithms.invertLaderman(mi9, m9);
-        System.out.println(mi9);
+            double strassenTime = timedInvert(result, counter, () -> {
+                algorithms.invertStrassen(result);
+            }, 1);
 
-        Matrix ladermanPaddedTest = new Matrix(2, 2);
-        algorithms.invertLaderman(ladermanPaddedTest, m1);
-        System.out.println(ladermanPaddedTest);
+            int[] strassenOps = {0, 0};
+            strassenOps[0] = counter.additive;
+            strassenOps[1] = counter.multiplicative;
+
+            double ladermanTime = timedInvert(result, counter, () -> {
+                //?
+                algorithms.invertLaderman(result ,result);
+            }, 1);
+
+            int[] ladermanOps = {0, 0};
+            ladermanOps[0] = counter.additive;
+            ladermanOps[1] = counter.multiplicative;
+
+            System.out.printf("n:%d\n", i);
+            System.out.printf("Binet: %.4f s%n", binetTime);
+            System.out.printf("Strassen: %.4f s%n", strassenTime);
+            System.out.printf("Laderman: %.4f s%n", ladermanTime);
+            System.out.println();
+
+            writer.writeResult("lab2test.txt",
+                    new double[]{i, binetTime, strassenTime, ladermanTime},
+                    new int[][]{binetOps, strassenOps, ladermanOps}
+            );
+
+        }
     }
 }

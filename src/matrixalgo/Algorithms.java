@@ -557,8 +557,7 @@ public class Algorithms {
             return;
         }
 
-        // Widoki = KOPIE (view robi new Matrix), więc target_11..target_22
-        // zawierają poprawne wartości, ale zapis do nich NIE zmienia target.
+
         Matrix target_11 = target.view(0, half, 0, half);
         Matrix target_12 = target.view(0, half, half, n);
         Matrix target_21 = target.view(half, n, 0, half);
@@ -641,8 +640,6 @@ public class Algorithms {
             return;
         }
 
-        // Widoki = KOPIE (view robi new Matrix), więc target_11..target_22
-        // zawierają poprawne wartości, ale zapis do nich NIE zmienia target.
         Matrix target_11 = target.view(0, half, 0, half);
         Matrix target_12 = target.view(0, half, half, n);
         Matrix target_21 = target.view(half, n, 0, half);

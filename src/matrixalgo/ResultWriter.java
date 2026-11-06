@@ -21,14 +21,28 @@ public class ResultWriter {
         }
 
         try(FileWriter writer = new FileWriter(path + "/" + filename, true)){
-            writer.write(
-                    data[0] + "\t" + data[1] + "\t" + data[2] + "\t" + data[3] + "\t" + data[4] + "\t" +
-                            (operations[0][0] + operations[0][1]) + "\t" +
-                            (operations[1][0] + operations[1][1]) + "\t" +
-                            (operations[2][0] + operations[2][1]) + "\t" +
-                            (operations[3][0] + operations[3][1]) + "\n"
-            );
+
+            String datastring = "";
+            for (double i : data){
+                datastring += i + "\t";
+            }
+
+            for (int[] row: operations){
+                datastring += (row[0] + row[1]) + "\t";
+            }
+
+            datastring += "\n";
+            //System.out.printf(datastring);
+            writer.write(datastring);
+//            writer.write(
+//                    data[0] + "\t" + data[1] + "\t" + data[2] + "\t" + data[3] + "\t" + data[4] + "\t" +
+//                            (operations[0][0] + operations[0][1]) + "\t" +
+//                            (operations[1][0] + operations[1][1]) + "\t" +
+//                            (operations[2][0] + operations[2][1]) + "\t" +
+//                            (operations[3][0] + operations[3][1]) + "\n"
+//            );
         } catch (Exception e) {
+            System.out.printf(e.getMessage());
             throw new RuntimeException(e);
         }
     }
