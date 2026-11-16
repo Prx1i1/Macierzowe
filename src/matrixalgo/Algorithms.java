@@ -704,6 +704,132 @@ public class Algorithms {
     }
 
     /**
+     * Calculates the LU decomposition of a matrix, relying on binet based techniques
+     * @param L output of the lower part
+     * @param U output of the upper part
+     * @param A input matrix to decompose
+     */
+    public void luBinet(Matrix L, Matrix U, Matrix A) {
+        int n = A.getRows();
+        int half = n / 2;
+
+        if (n == 1) {
+            L.put(0, 0, A.at(0, 0));
+            U.put(0, 0, 1);
+            return;
+        }
+
+        // Check if we need padding - it is when n isn't a power of 2
+        if (Integer.highestOneBit(n) != n) {
+            int paddedSize = Integer.highestOneBit(n) * 2;
+            Matrix padded = A.padEye(paddedSize);
+
+            Matrix L_padded = new Matrix(paddedSize, paddedSize);
+            Matrix U_padded = new Matrix(paddedSize, paddedSize);
+            luBinet(L_padded, U_padded, padded);
+
+            L.copy(L_padded, 0, 0, 0, 0, n, n);
+            U.copy(U_padded, 0, 0, 0, 0, n, n);
+            return;
+        }
+
+        Matrix[][] Ac = A.chunk(2, 2);
+        Matrix[][] Lc = L.chunk(2, 2);
+        Matrix[][] Uc = U.chunk(2, 2);
+
+        // Oblicz rekurencyjnie [L_11, U_11] = LU(A_11)
+        luBinet(Lc[0][0], Uc[0][0], Ac[0][0]);
+
+        // Oblicz rekurencyjnie U_11^-1 = inverse(U_11)
+        Matrix U_11_inv = new Matrix(Uc[0][0]);
+        invertBinet(U_11_inv);
+
+        // Oblicz L_21 = A_21 * U_11^-1
+        multiplyBinet(Lc[1][0], Ac[1][0], U_11_inv, false);
+
+        // Oblicz rekurencyjnie L_11^-1 = inverse(L_11)
+        Matrix L_11_inv = new Matrix(Lc[0][0]);
+        invertBinet(L_11_inv);
+
+        // Oblicz U_12 = L_11^-1 * A_12
+        multiplyBinet(Uc[0][1], L_11_inv, Ac[0][1], false);
+
+        // Oblicz S = A_22 - A_21 * U_11^-1 * L_11^-1 * A_12
+        Matrix scratch = new Matrix(half, half);
+        Matrix scratch2 = new Matrix(half, half);
+        multiplyBinet(scratch, Ac[1][0], U_11_inv, false);
+        multiplyBinet(scratch2, scratch, L_11_inv, false);
+        multiplyBinet(scratch, scratch2, Ac[0][1], false);
+        subtractMatrices(scratch2, Ac[1][1], scratch);
+
+        // Oblicz rekurencyjnie [L_22, U_22] = LU(S)
+        luBinet(Lc[1][1], Uc[1][1], scratch2);
+    }
+
+    /**
+     * Calculates the LU decomposition of a matrix, relying on strassen based techniques
+     * @param L output of the lower part
+     * @param U output of the upper part
+     * @param A input matrix to decompose
+     */
+    public void luStrassen(Matrix L, Matrix U, Matrix A) {
+        int n = A.getRows();
+        int half = n / 2;
+
+        if (n == 1) {
+            L.put(0, 0, A.at(0, 0));
+            U.put(0, 0, 1);
+            return;
+        }
+
+        // Check if we need padding - it is when n isn't a power of 2
+        if (Integer.highestOneBit(n) != n) {
+            int paddedSize = Integer.highestOneBit(n) * 2;
+            Matrix padded = A.padEye(paddedSize);
+
+            Matrix L_padded = new Matrix(paddedSize, paddedSize);
+            Matrix U_padded = new Matrix(paddedSize, paddedSize);
+            luStrassen(L_padded, U_padded, padded);
+
+            L.copy(L_padded, 0, 0, 0, 0, n, n);
+            U.copy(U_padded, 0, 0, 0, 0, n, n);
+            return;
+        }
+
+        Matrix[][] Ac = A.chunk(2, 2);
+        Matrix[][] Lc = L.chunk(2, 2);
+        Matrix[][] Uc = U.chunk(2, 2);
+
+        // Oblicz rekurencyjnie [L_11, U_11] = LU(A_11)
+        luStrassen(Lc[0][0], Uc[0][0], Ac[0][0]);
+
+        // Oblicz rekurencyjnie U_11^-1 = inverse(U_11)
+        Matrix U_11_inv = new Matrix(Uc[0][0]);
+        invertStrassen(U_11_inv);
+
+        // Oblicz L_21 = A_21 * U_11^-1
+        multiplyStrassen(Lc[1][0], Ac[1][0], U_11_inv);
+
+        // Oblicz rekurencyjnie L_11^-1 = inverse(L_11)
+        Matrix L_11_inv = new Matrix(Lc[0][0]);
+        invertStrassen(L_11_inv);
+
+        // Oblicz U_12 = L_11^-1 * A_12
+        multiplyStrassen(Uc[0][1], L_11_inv, Ac[0][1]);
+
+        // Oblicz S = A_22 - A_21 * U_11^-1 * L_11^-1 * A_12
+        Matrix scratch = new Matrix(half, half);
+        Matrix scratch2 = new Matrix(half, half);
+        multiplyStrassen(scratch, Ac[1][0], U_11_inv);
+        multiplyStrassen(scratch2, scratch, L_11_inv);
+        multiplyStrassen(scratch, scratch2, Ac[0][1]);
+        subtractMatrices(scratch2, Ac[1][1], scratch);
+
+        // Oblicz rekurencyjnie [L_22, U_22] = LU(S)
+        luStrassen(Lc[1][1], Uc[1][1], scratch2);
+    }
+
+    /**
      * Inverts a matrix using the recursive Laderman algorithm
      * @param B output matrix
      * @param A input matrix
