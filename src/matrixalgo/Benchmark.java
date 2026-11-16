@@ -162,7 +162,8 @@ public class Benchmark {
         int MAX_SIZE = 1000;
 
         for (int i = 1; i < MAX_SIZE; i++) {
-            Matrix result = new Matrix(i, i);
+            Matrix result = Matrix.generateRandom(i, i);
+            Matrix ladermanOutput = new Matrix(i, i);
 
             double binetTime = timedInvert(result, counter, () -> {
                 algorithms.invertBinet(result);
@@ -181,8 +182,7 @@ public class Benchmark {
             strassenOps[1] = counter.multiplicative;
 
             double ladermanTime = timedInvert(result, counter, () -> {
-                //?
-                algorithms.invertLaderman(result ,result);
+                algorithms.invertLaderman(ladermanOutput ,result);
             }, 1);
 
             int[] ladermanOps = {0, 0};
