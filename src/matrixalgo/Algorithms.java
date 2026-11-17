@@ -848,7 +848,7 @@ public class Algorithms {
             Matrix padded = A.padEye(rounded);
             Matrix paddedTarget = new Matrix(rounded, rounded);
             invertLaderman(paddedTarget, padded);
-            B.copy(padded, 0, 0, 0, 0, B.getCols(), B.getRows());
+            B.copy(paddedTarget, 0, 0, 0, 0, B.getCols(), B.getRows());
             return;
         }
 
