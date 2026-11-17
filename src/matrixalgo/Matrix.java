@@ -49,6 +49,10 @@ public class Matrix {
         return m;
     }
 
+    public Matrix like() {
+        return new Matrix(getRows(), getCols());
+    }
+
     private Coords indexToCoords(int i) {
         int x = i % cols;
         int y = i / cols;
